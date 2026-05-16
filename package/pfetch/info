@@ -1,0 +1,4 @@
+NAME=pfetch
+SYNC_URL=https://github.com/dylanaraps/pfetch.git
+DESCRIPTION=A pretty system information tool written in POSIX sh.
+DEPS=sh

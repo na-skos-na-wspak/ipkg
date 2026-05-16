@@ -1,10 +1,17 @@
 #!/usr/bin/env sh
 
 cmd_install() {
-	if [[ $is_local == 'y' ]]; then
-		printf "Local installer"
+	if ! [ -d "$(dirname "$0")/package/$2" ]; then
+		printf "No package found"
+		exit 1
+	fi
+
+
+	if [[ $1 != '' ]]; then
+		printf "Package '$2' at $(dirname "$0")/package/$2/"
 	else
-		printf "Installer"
+		printf "No package specified"
+		exit 1
 	fi
 }
 
@@ -13,6 +20,26 @@ cmd_remove() {
 		printf "Local remover"
 	else
 		printf "Remover"
+	fi
+}
+
+cmd_info() {
+	if ! [ -d "$(dirname "$0")/package/$1" ]; then
+		printf "No package found"
+		exit 1
+	fi
+
+
+	if [[ $1 != '' ]]; then
+		grep 'NAME=' $(dirname "$0")/package/$1/info | cut -d= -f2
+		printf "\n"
+		grep 'DESCRIPTION=' $(dirname "$0")/package/$1/info | cut -d= -f2
+		printf "
+Depends on: $(grep 'DEPS=' $(dirname "$0")/package/$1/info | cut -d= -f2)
+"
+	else
+		printf "No package specified"
+		exit 1
 	fi
 }
 
@@ -45,10 +72,13 @@ cmd_help() {
 	nc='\e[0m'
 	bo='\e[1m'
 	if [[ $1 == '' ]]; then
-		exec printf "$y\aIchii$nc Linux Package Manager
+		exec printf "$y$bo\aI$nc$y\achii$nc $bo\aP$nc\aac$bo\ak$nc\aa$bo\ag$nc\ae Manager
 A source based package manager and bootstrapper for use on $y\aIchii$nc Linux.\n
+usage: ipkg <op> [package(s)]\n
+Operations:
     $bo\ainstall$nc   -  Installs a package
     $bo\aremove$nc    -  Removes a package
+    $bo\ainfo$nc      -  Prints info about a package
     $bo\aupdate$nc    -  Checks installed packages for updates
     $bo\aupgrade$nc   -  Updates ipkg's repositories
     $bo\abootstrap$nc -  Bootstraps Ichii Linux
@@ -67,14 +97,15 @@ if [[ $1 = '' ]]; then
 fi
 
 command_check() {
-	cmds=(install remove update upgrade bootstrap help)
+	cmds_root=(install remove update upgrade bootstrap)
+	cmds=(info help)
 	
-	if [[ $1 == 'help' ]]; then
-		cmd_help $2
+	if [[ ${cmds[*]} =~ $1 ]] ; then
+		cmd_$1 $2
 		exit 0
 	fi
 
-	if [[ ${cmds[*]} =~ $1 ]] ; then
+	if [[ ${cmds_root[*]} =~ $1 ]] ; then
 		if [[ $(whoami) != 'root' ]]; then
 			while [[ $is_local != 'y' ]]; do
 
@@ -98,7 +129,7 @@ command_check() {
 				fi
 			done
 		fi
-		cmd_$1
+		cmd_$1 "$@"
 	else
 		cmd_help
 		exit 1
@@ -106,4 +137,4 @@ command_check() {
 
 }
 
-command_check $1 $2 $is_local
+command_check "$@"

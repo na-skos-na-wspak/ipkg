@@ -1,0 +1,32 @@
+#!/usr/bin/env sh
+PKG_NAME=$(basename "$PWD")
+configure() {
+	printf "[$PKG_NAME] configuring...
+[$PKG_NAME] Cloning into new directory...\n"
+
+	git clone $(grep 'SYNC_URL=' $(dirname "$0")/info | cut -d= -f2)
+
+	if [[ $1 == 'y' ]]; then
+		printf "[$PKG_NAME] Local install..."
+		sed -i 's|/usr|/home/'$(whoami)'/.local|' $(dirname "$0")/$PKG_NAME/Makefile
+	else
+		printf "[$PKG_NAME] Root install..."
+		sed -i 's|/usr|/opt|' $(dirname "$0")/$PKG_NAME/Makefile
+	fi
+}
+
+build() {
+	cd $(dirname "$0")/$PKG_NAME
+	printf "[$PKG_NAME] Installing..."
+	make install
+}
+
+uninstall() {
+	cd $(dirname "$0")/$PKG_NAME
+	printf "[$PKG_NAME] Uninstalling..."
+	make uninstall
+	cd ..
+	rm -rf $PKG_NAME
+}
+
+"$@"
