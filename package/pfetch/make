@@ -1,14 +1,16 @@
 #!/usr/bin/env sh
-PKG_NAME=$(basename "$PWD")
+PKG_NAME=$(grep 'NAME=' $(dirname "$0")/info | cut -d= -f2)
+echo $PKG_NAME
 configure() {
 	printf "[$PKG_NAME] configuring...
 [$PKG_NAME] Cloning into new directory...\n"
 
-	git clone $(grep 'SYNC_URL=' $(dirname "$0")/info | cut -d= -f2)
+	git clone $(grep 'SYNC_URL=' $(dirname "$0")/info | cut -d= -f2) $(dirname "$0")/$PKG_NAME
 
 	if [[ $1 == 'y' ]]; then
 		printf "[$PKG_NAME] Local install..."
 		sed -i 's|/usr|/home/'$(whoami)'/.local|' $(dirname "$0")/$PKG_NAME/Makefile
+		printf "[$PKG_NAME] Changed path to ~/.local/bin/..."
 	else
 		printf "[$PKG_NAME] Root install..."
 		sed -i 's|/usr|/opt|' $(dirname "$0")/$PKG_NAME/Makefile
