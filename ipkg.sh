@@ -8,24 +8,46 @@ cmd_install() {
 
 
 	if [[ $1 != '' ]]; then
-		printf "Package '$2' at $(dirname "$0")/package/$2/"
+		printf "Package '$2' at $(dirname "$0")/package/$2/\n"
+		while [[ $selection != 'y' ]]; do
+
+				if [[ $selection == '' ]]; then
+					read -rp "Proceed with installation? [y/N] " selection
+
+					if [[ $selection == '' ]]; then
+						selection='n'
+					fi
+
+				else read -rp "Baka! I don't understand '$selection', give a real option! [y/N] " selection
+
+				if [[ $selection == '' ]]; then
+					selection='n'
+				fi
+
+				fi
+
+				if [[ $selection == 'n' ]]; then
+					exit 1
+				fi
+			done
+			printf "hooray\n"
 	else
-		printf "No package specified"
+		printf "No package specified\n"
 		exit 1
 	fi
 }
 
 cmd_remove() {
 	if [[ $is_local == 'y' ]]; then
-		printf "Local remover"
+		printf "Local remover\n"
 	else
-		printf "Remover"
+		printf "Remover\n"
 	fi
 }
 
 cmd_info() {
 	if ! [ -d "$(dirname "$0")/package/$1" ]; then
-		printf "No package found"
+		printf "No package found\n"
 		exit 1
 	fi
 
@@ -34,36 +56,34 @@ cmd_info() {
 		grep 'NAME=' $(dirname "$0")/package/$1/info | cut -d= -f2
 		printf "\n"
 		grep 'DESCRIPTION=' $(dirname "$0")/package/$1/info | cut -d= -f2
-		printf "
-Depends on: $(grep 'DEPS=' $(dirname "$0")/package/$1/info | cut -d= -f2)
-"
+		printf "\nDepends on: $(grep 'DEPS=' $(dirname "$0")/package/$1/info | cut -d= -f2)\n"
 	else
-		printf "No package specified"
+		printf "No package specified\n"
 		exit 1
 	fi
 }
 
 cmd_update() {
 	if [[ $is_local == 'y' ]]; then
-		printf "Local updater"
+		printf "Local updater\n"
 	else
-		printf "updater"
+		printf "updater\n"
 	fi
 }
 
 cmd_upgrade() {
 	if [[ $is_local == 'y' ]]; then
-		printf "Local upgrader"
+		printf "Local upgrader\n"
 	else
-		printf "Upgrader"
+		printf "Upgrader\n"
 	fi
 }
 
 cmd_bootstrap() {
 	if [[ $is_local == 'y' ]]; then
-		printf "Local bootstrap"
+		printf "Local bootstrap\n"
 	else
-		printf "Bootstrap"
+		printf "Bootstrap\n"
 	fi
 }
 
@@ -82,13 +102,46 @@ Operations:
     $bo\aupdate$nc    -  Checks installed packages for updates
     $bo\aupgrade$nc   -  Updates ipkg's repositories
     $bo\abootstrap$nc -  Bootstraps Ichii Linux
-    $bo\ahelp$nc      -  Shows this help menu
-"
+    $bo\ahelp$nc      -  Shows this help menu\n"
+	fi
+
+	if [[ $1 == 'install' ]]; then
+		exec printf "Installs a package.
+usage: ipkg install [package(s)]\n"
+	fi
+
+	if [[ $1 == 'remove' ]]; then
+		exec printf "Removes a package.
+usage: ipkg remove [package(s)]\n"
+	fi
+
+	if [[ $1 == 'info' ]]; then
+		exec printf "Gives info about a package.
+usage: ipkg info [package]
+(Ignores any other package after the first)\n"
+	fi
+
+	if [[ $1 == 'update' ]]; then
+		exec printf "Updates a package.
+usage: ipkg update [package(s)]
+To update all packages: ipkg update all\n"
+	fi
+
+	if [[ $1 == 'upgrade' ]]; then
+		exec printf "Upgrades the repository.
+usage: ipkg upgrade
+(This takes no args)\n"
+	fi
+
+	if [[ $1 == 'bootstrap' ]]; then
+		exec printf "WIP!\n"
 	fi
 
 	if [[ $1 == 'help' ]]; then
 		exec man ipkg
 	fi
+
+	printf "What?\n"
 }
 
 if [[ $1 = '' ]]; then
