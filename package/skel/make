@@ -1,0 +1,62 @@
+#!/usr/bin/env sh
+# The shebang here is needed to execute, make sure the file is executable too
+
+# Gets the package name from the info file in the current directory
+PKG_NAME=$(grep 'NAME=' $(dirname "$0")/info | cut -d= -f2)
+# Gets the full path of the package directory
+PKG_DIR="$(cd "$(dirname "${0}")" && pwd)"
+
+# The configure script
+# The purpose of this is to clone/get the source, and if the folder/file already exists, check for updates, or replace it
+# Additionally patches can be made here too, either bundle .patch files with your package and add them here, or
+# use sed like in this example to change a varible.
+#
+# And every time this function is called, there will be a second variable, defining whether the build is for a local install, or not.
+# If you do not want to make it a local build, set it in 'info'.
+configure() {
+	printf "[$PKG_NAME] Configuring...
+[$PKG_NAME] Cloning into new directory...\n"
+
+	git clone $(grep 'SYNC_URL=' $PKG_DIR/info | cut -d= -f2) $PKG_DIR/$PKG_NAME || { printf "[$PKG_NAME] Directory aleady here, checking for updates...\n"; cd $PKG_DIR/$PKG_NAME; git pull; cd ../; }
+
+	if [[ $1 == 'y' ]]; then
+		printf "[$PKG_NAME] Local install...\n"
+		sed -i 's|PREFIX ?= .*|PREFIX ?= /home/'$(whoami)'/.local|' $PKG_DIR/$PKG_NAME/Makefile
+		printf "[$PKG_NAME] Changed path to ~/.local/bin/...\n"
+	else
+		printf "[$PKG_NAME] Root install...\n"
+		sed -i 's|PREFIX ?= .*|PREFIX ?= /opt|' $PKG_DIR/$PKG_NAME/Makefile
+	fi
+}
+
+# Instructions on how to build and install the package.
+# Make the function cd into the source and run make/make install, and then echo the packages name to installed.
+build() {
+	cd $PKG_DIR/$PKG_NAME
+	printf "[$PKG_NAME] Installing...\n"
+	make install
+	echo $PKG_NAME >> $PKG_DIR/../installed
+}
+
+# Attempts to uninstall the package by leveraging the sources make command
+# If the folder is not found, it exits.
+# Additionally, it removes the package name from the list of installed packages found in the root of the repository.
+#
+# This function should ALWAYS be called before clean() when trying to remove a package.
+# If you do not have this folder, you can run configure (and make sure its root or local!) and then run this function.
+# Afterwards you can run clean.
+uninstall() {
+	cd $PKG_DIR/$PKG_NAME || { printf "[$PKG_NAME] Package is not installed.\n"; exit 1; }
+	printf "[$PKG_NAME] Uninstalling...\n"
+	make uninstall
+	sed -i '/'$PKG_NAME'/d' $PKG_DIR/../installed
+}
+
+# Deletes the work directory for the package, doesn't remove the package from the system nor the 'installed' file in the root of the repository list
+clean() {
+	printf "[$PKG_NAME] Deleting work dir...\n"
+	rm -rf $PKG_DIR/$PKG_NAME
+}
+
+# Makes all of the variables available for all the functions
+"$@"

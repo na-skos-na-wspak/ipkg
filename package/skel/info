@@ -1,0 +1,6 @@
+NAME=Skeleton
+SYNC_URL=Insert Git URL Here
+WGET_URL=If you want to grab a tarball, place the link here
+DESCRIPTION=Add a description, we wanna know what it is!
+DEPS=Add space seperated dependencies here
+CAN_LOCAL=bool between y/n on whether the program can be installed locally for an unprivelaged user to use. This is mostly for use outside of Ichii Linux, where this may not be part of root. Install packages to ~/.local PLEASE!
