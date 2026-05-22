@@ -6,7 +6,7 @@ configure() {
 	printf "[$PKG_NAME] Configuring...
 [$PKG_NAME] Cloning into new directory...\n"
 
-	git clone $(grep 'SYNC_URL=' $PKG_DIR/info | cut -d= -f2) $PKG_DIR/$PKG_NAME || { printf "[$PKG_NAME] Directory aleady here, checking for updates...\n"; cd $PKG_DIR/$PKG_NAME; git pull; cd ../; }
+	git clone $(grep 'SYNC_URL=' $PKG_DIR/info | cut -d= -f2) $PKG_DIR/$PKG_NAME || { printf "[$PKG_NAME] Directory already here, checking for updates...\n"; cd $PKG_DIR/$PKG_NAME; git pull; cd ../; }
 
 	if [[ $1 == 'y' ]]; then
 		printf "[$PKG_NAME] Local install...\n"
