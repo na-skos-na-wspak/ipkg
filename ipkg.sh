@@ -63,6 +63,20 @@ cmd_info() {
 	fi
 }
 
+cmd_search() {
+	if [[ $1 != '' ]]; then
+		packages_found=$(find $(dirname "$0")/package -name *$1* | cut -d/ -f3)
+		if [[ $packages_found == '' ]]; then
+			printf "No packages found\n"
+			exit 1
+		fi
+		printf "$packages_found\n"
+	else
+		printf "No package specified\n"
+		exit 1
+	fi
+}
+
 cmd_update() {
 	if [[ $is_local == 'y' ]]; then
 		printf "Local updater\n"
@@ -99,6 +113,7 @@ Operations:
     $bo\ainstall$nc   -  Installs a package
     $bo\aremove$nc    -  Removes a package
     $bo\ainfo$nc      -  Prints info about a package
+    $bo\aserach$nc    -  Searches the repository for a package
     $bo\aupdate$nc    -  Checks installed packages for updates
     $bo\aupgrade$nc   -  Updates ipkg's repositories
     $bo\abootstrap$nc -  Bootstraps Ichii Linux
@@ -120,6 +135,13 @@ usage: ipkg remove [package(s)]\n"
 usage: ipkg info [package]
 (Ignores any other package after the first)\n"
 	fi
+
+	if [[ $1 == 'search' ]]; then
+		exec printf "Searches the repository for a package.
+usage: ipkg search [package]
+(Ignores any other package after the first)\n"
+	fi
+
 
 	if [[ $1 == 'update' ]]; then
 		exec printf "Updates a package.
@@ -151,7 +173,7 @@ fi
 
 command_check() {
 	cmds_root=(install remove update upgrade bootstrap)
-	cmds=(info help)
+	cmds=(info search help)
 	
 	if [[ ${cmds[*]} =~ $1 ]] ; then
 		cmd_$1 $2
