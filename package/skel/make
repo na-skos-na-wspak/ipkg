@@ -34,7 +34,7 @@ configure() {
 build() {
 	cd $PKG_DIR/$PKG_NAME
 	printf "[$PKG_NAME] Installing...\n"
-	make install
+	make install || { printf "[$PKG_NAME] Failed to install, aborting...\n"; exit 1; }
 	echo $PKG_NAME >> $PKG_DIR/../installed
 }
 
