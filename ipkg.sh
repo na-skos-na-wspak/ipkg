@@ -30,7 +30,8 @@ cmd_install() {
 					exit 1
 				fi
 			done
-			printf "hooray\n"
+			$(dirname "$0")/package/$2/make configure $is_local
+			$(dirname "$0")/package/$2/make build
 	else
 		printf "No package specified\n"
 		exit 1
@@ -38,10 +39,43 @@ cmd_install() {
 }
 
 cmd_remove() {
-	if [[ $is_local == 'y' ]]; then
-		printf "Local remover\n"
+	if ! [ -d "$(dirname "$0")/package/$2" ]; then
+		printf "No package found"
+		exit 1
+	fi
+
+	if [[ $(grep $2 $(dirname "$0")/package/installed) == '' ]]; then
+		printf "Package $2 is not installed\n"
+		exit 1
+	fi
+
+	if [[ $1 != '' ]]; then
+		printf "Package '$2' at $(dirname "$0")/package/$2/\n"
+		while [[ $selection != 'y' ]]; do
+
+				if [[ $selection == '' ]]; then
+					read -rp "Proceed with uninstall? [y/N] " selection
+
+					if [[ $selection == '' ]]; then
+						selection='n'
+					fi
+
+				else read -rp "Baka! I don't understand '$selection', give a real option! [y/N] " selection
+
+				if [[ $selection == '' ]]; then
+					selection='n'
+				fi
+
+				fi
+
+				if [[ $selection == 'n' ]]; then
+					exit 1
+				fi
+			done
+			$(dirname "$0")/package/$2/make uninstall
 	else
-		printf "Remover\n"
+		printf "No package specified\n"
+		exit 1
 	fi
 }
 
