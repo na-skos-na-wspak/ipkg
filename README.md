@@ -6,6 +6,7 @@ Usage:
 > install   -  Installs a package  
 > remove    -  Removes a package  
 > info      -  Prints info about a package  
+> searcg    -  Searches the repository for a package
 > update    -  Checks installed packages for updates  
 > upgrade   -  Updates ipkg's repositories  
 > bootstrap -  Bootstraps Ichii Linux (currently not applicable, but will be at some point)  
