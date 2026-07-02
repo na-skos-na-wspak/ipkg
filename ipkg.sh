@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 cmd_install() {
 	if ! [ -d "$(dirname "$0")/package/$2" ]; then
