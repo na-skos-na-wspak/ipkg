@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 
 cmd_install() {
-	if ! [ -d "$(dirname "$0")/package/$2" ]; then
-		printf "No package found"
+	pkg_path=$(find $(dirname "$0") -maxdepth 3 -name $2 -type d)
+
+	if [ -z $pkg_path ]; then
+		printf "No package found\n"
 		exit 1
 	fi
 
-
 	if [[ $1 != '' ]]; then
-		printf "Package '$2' at $(dirname "$0")/package/$2/\n"
+		printf "Package '$2' at $pkg_path\n"
 		while [[ $selection != 'y' ]]; do
 
 				if [[ $selection == '' ]]; then
@@ -30,8 +31,8 @@ cmd_install() {
 					exit 1
 				fi
 			done
-			$(dirname "$0")/package/$2/make configure $is_local
-			$(dirname "$0")/package/$2/make build
+			$pkg_path/make configure $is_local
+			$pkg_path/make build
 	else
 		printf "No package specified\n"
 		exit 1
@@ -39,8 +40,10 @@ cmd_install() {
 }
 
 cmd_remove() {
-	if ! [ -d "$(dirname "$0")/package/$2" ]; then
-		printf "No package found"
+	pkg_path=$(find $(dirname "$0") -maxdepth 3 -name $2 -type d)
+
+	if [ -z $pkg_path ]; then
+		printf "No package found\n"
 		exit 1
 	fi
 
@@ -50,7 +53,7 @@ cmd_remove() {
 	fi
 
 	if [[ $1 != '' ]]; then
-		printf "Package '$2' at $(dirname "$0")/package/$2/\n"
+		printf "Package '$2' at $pkg_path\n"
 		while [[ $selection != 'y' ]]; do
 
 				if [[ $selection == '' ]]; then
@@ -72,7 +75,7 @@ cmd_remove() {
 					exit 1
 				fi
 			done
-			$(dirname "$0")/package/$2/make uninstall
+			$pkg_path/make uninstall
 	else
 		printf "No package specified\n"
 		exit 1
@@ -80,17 +83,19 @@ cmd_remove() {
 }
 
 cmd_info() {
-	if ! [ -d "$(dirname "$0")/package/$1" ]; then
+	pkg_path=$(find $(dirname "$0") -maxdepth 3 -name $1 -type d)
+
+	if [ -z $pkg_path ]; then
 		printf "No package found\n"
 		exit 1
 	fi
 
 
 	if [[ $1 != '' ]]; then
-		grep 'NAME=' $(dirname "$0")/package/$1/info | cut -d= -f2
+		grep 'NAME=' $pkg_path/info | cut -d= -f2
 		printf "\n"
-		grep 'DESCRIPTION=' $(dirname "$0")/package/$1/info | cut -d= -f2
-		printf "\nDepends on: $(grep 'DEPS=' $(dirname "$0")/package/$1/info | cut -d= -f2)\n"
+		grep 'DESCRIPTION=' $pkg_path/info | cut -d= -f2
+		printf "\nDepends on: $(grep 'DEPS=' $pkg_path/info | cut -d= -f2)\n"
 	else
 		printf "No package specified\n"
 		exit 1
@@ -99,7 +104,7 @@ cmd_info() {
 
 cmd_search() {
 	if [[ $1 != '' ]]; then
-		packages_found=$(find $(dirname "$0")/package -name *$1* | cut -d/ -f3)
+		packages_found=$(find $(dirname "$0") -maxdepth 3 -name *$1*)
 		if [[ $packages_found == '' ]]; then
 			printf "No packages found\n"
 			exit 1

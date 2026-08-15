@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+PKG_NAME=$(grep 'NAME=' $(dirname "$0")/info | cut -d= -f2)
+PKG_DIR="$(cd "$(dirname "${0}")" && pwd)"
+PKG_PATH="$PKG_DIR/$PKG_NAME"
+
+log() {
+        format="[ $PKG_NAME ]"
+        printf "$format $1\n"
+}
+
+configure() {
+	log "Configuring..."
+	log "Cloning into new directory..."
+
+	git clone $(grep 'SYNC_URL=' $PKG_DIR/info | cut -d= -f2) $PKG_PATH || { log "Directory already here, checking for updates..."; cd $PKG_PATH; git pull; cd ../; }
+
+	if [[ $1 == 'y' ]]; then
+		log "Local install..."
+		sed -i 's|PREFIX ?= .*|PREFIX ?= /home/'$(whoami)'/.local|' $PKG_PATH/Makefile
+		log "Changed path to ~/.local/bin/..."
+	else
+		log "Root install..."
+		sed -i 's|PREFIX ?= .*|PREFIX ?= /opt|' $PKG_PATH/Makefile
+	fi
+}
+
+build() {
+	cd $PKG_PATH
+	log "Installing..."
+	make install || { log "Failed to install, aborting..."; exit 1; }
+	echo $PKG_NAME >> $PKG_DIR/../../installed
+}
+
+uninstall() {
+	cd $PKG_PATH || { log "Package is not installed."; exit 1; }
+	log "Uninstalling..."
+	make uninstall
+	sed -i '/'$PKG_NAME'/d' $PKG_DIR/../../installed
+}
+
+clean() {
+	log "Deleting work dir..." $@
+	rm -rf $PKG_PATH
+}
+
+"$@"
